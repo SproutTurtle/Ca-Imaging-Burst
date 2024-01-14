@@ -25,6 +25,7 @@ class GetContour(OperatorMixin):
     area_threshold: int = 300
     bkg_history: int = 500
     bkg_var_threshold: int = 16
+    starting_frame: int = 0
     tag: str = "get contour"
 
     def __post_init__(self):
@@ -34,6 +35,8 @@ class GetContour(OperatorMixin):
     def __call__(self):
         path = pathlib.Path(self.filename)
         cap = cv2.VideoCapture(path.as_posix())
+        if self.starting_frame > 0:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, self.starting_frame)
 
         output_path = os.path.join(self.analysis_path, path.stem + f"_processing.mp4")
         ret, frame_origin = cap.read()
@@ -110,7 +113,7 @@ class OverlayContour(OperatorMixin):
 
     @cache_call
     def __call__(self, all_contours):
-        path = pathlib.Path(self.path)
+        path = pathlib.Path(self.filename)
         output_path = os.path.join(self.analysis_path, path.stem + f"_output.mp4")
 
         cap = cv2.VideoCapture(path.as_posix())
