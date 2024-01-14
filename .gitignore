@@ -7,6 +7,8 @@ __pycache__/
 *.so
 
 *.png
+*.mp4
+*.mkv
 .DS_Store
 
 # Distribution / packaging
