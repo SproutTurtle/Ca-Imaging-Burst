@@ -136,10 +136,16 @@ class OverlayContour(OperatorMixin):
         contour_img = np.zeros_like(frame_origin, dtype=np.uint8)
         cv2.drawContours(contour_img, all_contours, -1, (255, 255, 255), 1)
 
+        # Dilate
         kernel = np.ones((self.kernel_size, self.kernel_size), np.uint8)
         dilated_img = cv2.dilate(contour_img, kernel, iterations=1)
 
+        # Masking
         dilated_img = cv2.bitwise_and(dilated_img, dilated_img, mask=~mask)
+        mask = np.zeros_like(mask)
+        mask[5:-5, 5:-5, ...] = 255
+        dilated_img = cv2.bitwise_and(dilated_img, dilated_img, mask=mask)
+
         contours, _ = cv2.findContours(
             cv2.cvtColor(dilated_img, cv2.COLOR_BGR2GRAY),
             cv2.RETR_EXTERNAL,
