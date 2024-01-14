@@ -1,10 +1,7 @@
 __all__ = ["GetContour"]
 
-import os, sys
-import glob
+import os
 import pathlib
-import itertools
-import multiprocessing as mp
 
 import numpy as np
 import cv2
@@ -12,24 +9,30 @@ import cv2
 from dataclasses import dataclass
 
 from miv.core.operator import OperatorMixin
-from miv.core.pipeline import Pipeline
-from miv.core.operator import cache_call
+from miv.core.operator.wrapper import cache_call
 
 
 @dataclass
 class GetContour(OperatorMixin):
-    path: str
+    """ GetContour
+
+    Parameter:
+    ----------
+    TODO
+    """
+    filename: str
     area_threshold: int = 100
     tag: str = "get contour"
 
-    def __post_init__():
+    def __post_init__(self):
         super().__init__()
 
     @cache_call
     def __call__(self):
-        path = pathlib.Path(self.path)
+        path = pathlib.Path(self.filename)
         cap = cv2.VideoCapture(path.as_posix())
-        output_path = path.stem + f"_processing.mp4"
+        
+        output_path = os.path.join(self.analysis_path, path.stem + f"_processing.mp4")
         ret, frame_origin = cap.read()
         fps = cap.get(cv2.CAP_PROP_FPS)
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
