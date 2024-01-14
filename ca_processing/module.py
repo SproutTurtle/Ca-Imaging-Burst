@@ -43,7 +43,7 @@ class GetContour(OperatorMixin):
         fps = cap.get(cv2.CAP_PROP_FPS)
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         out = cv2.VideoWriter(
-            output_path, fourcc, fps, (frame_origin.shape[1], frame_origin.shape[0])
+            output_path, fourcc, fps, (2*frame_origin.shape[1], frame_origin.shape[0])
         )
 
         if not ret:
@@ -104,6 +104,7 @@ class OverlayContour(OperatorMixin):
 
     filename: str
     mask_threshold: int = 10
+    edge_exclude: int = 5
     kernel_size: int = 7
 
     tag: str = "overlay contour"
@@ -141,10 +142,11 @@ class OverlayContour(OperatorMixin):
         dilated_img = cv2.dilate(contour_img, kernel, iterations=1)
 
         # Masking
+        edge_exclude = self.edge_exclude
         dilated_img = cv2.bitwise_and(dilated_img, dilated_img, mask=~mask)
-        mask = np.zeros_like(mask)
-        mask[5:-5, 5:-5, ...] = 255
-        dilated_img = cv2.bitwise_and(dilated_img, dilated_img, mask=mask)
+        mask_edges = np.zeros_like(mask)
+        mask_edges[edge_exclude:-edge_exclude, edge_exclude:-edge_exclude, ...] = 255
+        dilated_img = cv2.bitwise_and(dilated_img, dilated_img, mask=mask_edges)
 
         contours, _ = cv2.findContours(
             cv2.cvtColor(dilated_img, cv2.COLOR_BGR2GRAY),
@@ -171,3 +173,19 @@ class OverlayContour(OperatorMixin):
             os.path.join(save_path, "mask.png"),
             outputs,
         )
+
+    def plot_average_intensity(self, outputs, inputs, show=False, save_path=None):
+        mask = outputs
+
+        path = pathlib.Path(self.filename)
+        cap = cv2.VideoCapture(path.as_posix())
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+        
+        # TODO
+
+        cap.release()
